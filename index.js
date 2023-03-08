@@ -16,18 +16,19 @@ function render(state = store.Home) {
   ${Main(state)}
   ${Footer()}
   `;
-  afterRender();
+  afterRender(state);
   router.updatePageLinks();
 }
 
 function afterRender(state) {
+  console.log("matsinet - state:", state);
   // add menu toggle to bars icon in nav bar
   document.querySelector(".fa-bars").addEventListener("click", () => {
     document.querySelector("nav > ul").classList.toggle("hidden--mobile");
   });
-  document.querySelector(".expRate").addEventListener("click", event => {
-    console.log(event.target.attributes);
-  });
+  // document.querySelector(".expRate").addEventListener("click", event => {
+  //   console.log(event.target.attributes);
+  // });
   if (state.view === "Order") {
     document.querySelector("form").addEventListener("submit", event => {
       event.preventDefault();
@@ -49,7 +50,7 @@ function afterRender(state) {
         crust: inputList.crust.value,
         cheese: inputList.cheese.value,
         sauce: inputList.sauce.value,
-        toppings: toppings
+        toppings
       };
       console.log("request Body", requestData);
 
@@ -63,6 +64,23 @@ function afterRender(state) {
         .catch(error => {
           console.log("It puked", error);
         });
+    });
+  }
+
+  if (state.view === "Pizza") {
+    document.querySelectorAll(".delete-action").forEach(element => {
+      element.addEventListener("click", event => {
+        const id = event.target.dataset.id;
+        const doit = confirm(`Are your sure you want to delete ${id}`);
+        if (doit) {
+          axios
+            .delete(`${process.env.PIZZA_PLACE_API_URL}/pizzas/${id}`)
+            .then(response => {
+              console.log("response", response);
+              router.navigate("/pizza");
+            });
+        }
+      });
     });
   }
 }
@@ -115,9 +133,16 @@ router.hooks({
       default:
         done();
     }
+  },
+  already: params => {
+    const view =
+      params && params.data && params.data.view
+        ? capitalize(params.data.view)
+        : "Home";
+
+    render(store[view]);
   }
 });
-
 
 router
   .on({
