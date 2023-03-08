@@ -50,7 +50,7 @@ function afterRender(state) {
         crust: inputList.crust.value,
         cheese: inputList.cheese.value,
         sauce: inputList.sauce.value,
-        toppings: toppings
+        toppings
       };
       console.log("request Body", requestData);
 
