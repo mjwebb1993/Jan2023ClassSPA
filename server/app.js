@@ -3,6 +3,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const pizzas = require("./routers/pizzas");
+const axios = require("axios");
 
 dotenv.config();
 
@@ -75,6 +76,33 @@ app.post("/add", (request, response) => {
     sum: num1 + num2
   };
   response.json(responseBody);
+});
+
+app.get("/yelp", async (request, response) => {
+  const params = request.query;
+
+  console.log("matsinet - params:", params);
+
+  const options = {
+    method: "GET",
+    url: "https://api.yelp.com/v3/businesses/search",
+    params: { location: params.location, term: params.term },
+    headers: {
+      accept: "application/json",
+      Authorization:
+        "Bearer 334PcaHaXJGmgC3W8JVSxbK4H1bH4oK3JGFDcZ9anszck8SB9IMfSDrK5AotFrJM4-lpDDyOgQUbP54VcwVPo5fgvIfUyCfhjIDRQ5jdHHZONIfzG2exaaEHSDwKZHYx"
+    }
+  };
+
+  await axios
+    .request(options)
+    .then(function(yelpResponse) {
+      console.log("matsinet - data:", yelpResponse.data);
+      response.json(yelpResponse.data.businesses);
+    })
+    .catch(function(error) {
+      console.error(error);
+    });
 });
 
 app.use("/pizzas", pizzas);
