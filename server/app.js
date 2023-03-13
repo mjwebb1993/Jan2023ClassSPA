@@ -89,8 +89,7 @@ app.get("/yelp", async (request, response) => {
     params: { location: params.location, term: params.term },
     headers: {
       accept: "application/json",
-      Authorization:
-        "Bearer 334PcaHaXJGmgC3W8JVSxbK4H1bH4oK3JGFDcZ9anszck8SB9IMfSDrK5AotFrJM4-lpDDyOgQUbP54VcwVPo5fgvIfUyCfhjIDRQ5jdHHZONIfzG2exaaEHSDwKZHYx"
+      Authorization: `Bearer ${process.env.YELP_API_KEY}`
     }
   };
 
