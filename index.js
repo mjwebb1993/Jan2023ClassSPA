@@ -16,81 +16,23 @@ function render(state = store.Home) {
   ${Main(state)}
   ${Footer()}
   `;
-  afterRender(state);
+  // afterRender(state);
   router.updatePageLinks();
+  console.log("render function completed");
 }
 
-function afterRender(state) {
-  console.log("matsinet - state:", state);
-  // add menu toggle to bars icon in nav bar
-  document.querySelector(".fa-bars").addEventListener("click", () => {
-    document.querySelector("nav > ul").classList.toggle("hidden--mobile");
-  });
-  // document.querySelector(".expRate").addEventListener("click", event => {
-  //   console.log(event.target.attributes);
-  // });
-  if (state.view === "Order") {
-    document.querySelector("form").addEventListener("submit", event => {
-      event.preventDefault();
+// function afterRender(state) {
 
-      const inputList = event.target.elements;
-      console.log("Input Element List", inputList);
-
-      const toppings = [];
-      // Iterate over the toppings input group elements
-      for (let input of inputList.toppings) {
-        // If the value of the checked attribute is true then add the value to the toppings array
-        if (input.checked) {
-          toppings.push(input.value);
-        }
-      }
-
-      const requestData = {
-        customer: inputList.customer.value,
-        crust: inputList.crust.value,
-        cheese: inputList.cheese.value,
-        sauce: inputList.sauce.value,
-        toppings
-      };
-      console.log("request Body", requestData);
-
-      axios
-        .post(`${process.env.PIZZA_PLACE_API_URL}/pizzas`, requestData)
-        .then(response => {
-          // Push the new pizza onto the Pizza state pizzas attribute, so it can be displayed in the pizza list
-          store.Pizza.pizzas.push(response.data);
-          router.navigate("/Pizza");
-        })
-        .catch(error => {
-          console.log("It puked", error);
-        });
-    });
-  }
-
-  if (state.view === "Pizza") {
-    document.querySelectorAll(".delete-action").forEach(element => {
-      element.addEventListener("click", event => {
-        const id = event.target.dataset.id;
-        const doit = confirm(`Are your sure you want to delete ${id}`);
-        if (doit) {
-          axios
-            .delete(`${process.env.PIZZA_PLACE_API_URL}/pizzas/${id}`)
-            .then(response => {
-              console.log("response", response);
-              router.navigate("/pizza");
-            });
-        }
-      });
-    });
-  }
-}
+// }
 
 router.hooks({
   before: (done, params) => {
     const view =
       params && params.data && params.data.view
         ? capitalize(params.data.view)
-        : "Home"; // Add a switch case statement to handle multiple routes
+        : "Home";
+
+    // Add a switch case statement to handle multiple routes
     switch (view) {
       case "Home":
         axios
@@ -110,6 +52,7 @@ router.hooks({
               response.data.main.feels_like
             );
             store.Home.weather.description = response.data.weather[0].main;
+            console.log("before hook completed");
             done();
           })
           .catch(err => console.log(err));
@@ -123,6 +66,7 @@ router.hooks({
             // Storing retrieved data in state
             store.Pizza.pizzas = response.data;
             console.log(response.data);
+            console.log("before hook completed");
             done();
           })
           .catch(error => {
@@ -131,10 +75,82 @@ router.hooks({
           });
         break;
       default:
+        console.log("before hook completed");
         done();
     }
   },
+  after: params => {
+    console.log("after render fired - params: ", params);
+
+    const view =
+      params && params.data && params.data.view
+        ? capitalize(params.data.view)
+        : "Home"; // Add a switch case statement to handle multiple routes
+
+    // console.log("matsinet - state:", state);
+
+    // add menu toggle to bars icon in nav bar
+    document.querySelector(".fa-bars").addEventListener("click", () => {
+      document.querySelector("nav > ul").classList.toggle("hidden--mobile");
+    });
+
+    if (view === "Order") {
+      document.querySelector("form").addEventListener("submit", event => {
+        event.preventDefault();
+
+        const inputList = event.target.elements;
+        console.log("Input Element List", inputList);
+
+        const toppings = [];
+        // Iterate over the toppings input group elements
+        for (let input of inputList.toppings) {
+          // If the value of the checked attribute is true then add the value to the toppings array
+          if (input.checked) {
+            toppings.push(input.value);
+          }
+        }
+
+        const requestData = {
+          customer: inputList.customer.value,
+          crust: inputList.crust.value,
+          cheese: inputList.cheese.value,
+          sauce: inputList.sauce.value,
+          toppings
+        };
+        console.log("request Body", requestData);
+
+        axios
+          .post(`${process.env.PIZZA_PLACE_API_URL}/pizzas`, requestData)
+          .then(response => {
+            // Push the new pizza onto the Pizza state pizzas attribute, so it can be displayed in the pizza list
+            store.Pizza.pizzas.push(response.data);
+            router.navigate("/Pizza");
+          })
+          .catch(error => {
+            console.log("It puked", error);
+          });
+      });
+    }
+
+    if (view === "Pizza") {
+      document.querySelectorAll(".delete-action").forEach(element => {
+        element.addEventListener("click", event => {
+          const id = event.target.dataset.id;
+          const doit = confirm(`Are your sure you want to delete ${id}`);
+          if (doit) {
+            axios
+              .delete(`${process.env.PIZZA_PLACE_API_URL}/pizzas/${id}`)
+              .then(response => {
+                console.log("response", response);
+                router.navigate("/pizza");
+              });
+          }
+        });
+      });
+    }
+  },
   already: params => {
+    console.log("already hook fired");
     const view =
       params && params.data && params.data.view
         ? capitalize(params.data.view)
